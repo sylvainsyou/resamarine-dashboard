@@ -25,6 +25,7 @@ export default function ProDashboard() {
     price: "",
     image: "",
   });
+  const [editIndex, setEditIndex] = useState(null);
 
   const handleDateClick = (info) => {
     const title = prompt("Titre de l'activité :");
@@ -41,8 +42,30 @@ export default function ProDashboard() {
 
   const handleAddActivity = () => {
     if (!newActivity.title) return;
-    setActivities([...activities, newActivity]);
+    if (editIndex !== null) {
+      const updated = [...activities];
+      updated[editIndex] = newActivity;
+      setActivities(updated);
+      setEditIndex(null);
+    } else {
+      setActivities([...activities, newActivity]);
+    }
     setNewActivity({ title: "", location: "", duration: "", capacity: "", price: "", image: "" });
+  };
+
+  const handleEdit = (index) => {
+    setNewActivity(activities[index]);
+    setEditIndex(index);
+  };
+
+  const handleDelete = (index) => {
+    const updated = [...activities];
+    updated.splice(index, 1);
+    setActivities(updated);
+    if (editIndex === index) {
+      setNewActivity({ title: "", location: "", duration: "", capacity: "", price: "", image: "" });
+      setEditIndex(null);
+    }
   };
 
   return (
@@ -51,7 +74,9 @@ export default function ProDashboard() {
         <h1 className="text-3xl font-bold text-blue-900 mb-6">Tableau de bord professionnel</h1>
 
         <Card className="p-4 mb-6">
-          <h2 className="text-xl font-semibold text-blue-800 mb-4">Créer une nouvelle activité</h2>
+          <h2 className="text-xl font-semibold text-blue-800 mb-4">
+            {editIndex !== null ? "Modifier l'activité" : "Créer une nouvelle activité"}
+          </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <input
               type="text"
@@ -96,7 +121,9 @@ export default function ProDashboard() {
               onChange={(e) => setNewActivity({ ...newActivity, image: e.target.value })}
             />
           </div>
-          <Button className="mt-4" onClick={handleAddActivity}>Ajouter l'activité</Button>
+          <Button className="mt-4" onClick={handleAddActivity}>
+            {editIndex !== null ? "Mettre à jour" : "Ajouter l'activité"}
+          </Button>
         </Card>
 
         {activities.length > 0 && (
@@ -104,8 +131,14 @@ export default function ProDashboard() {
             <h2 className="text-xl font-semibold text-blue-800 mb-4">Mes activités</h2>
             <ul className="list-disc pl-5">
               {activities.map((act, idx) => (
-                <li key={idx} className="mb-2">
-                  <strong>{act.title}</strong> – {act.location} – {act.duration} min – {act.capacity} pers – {act.price} €
+                <li key={idx} className="mb-2 flex justify-between items-center">
+                  <div>
+                    <strong>{act.title}</strong> – {act.location} – {act.duration} min – {act.capacity} pers – {act.price} €
+                  </div>
+                  <div className="flex gap-2">
+                    <Button variant="outline" size="sm" onClick={() => handleEdit(idx)}>Modifier</Button>
+                    <Button variant="destructive" size="sm" onClick={() => handleDelete(idx)}>Supprimer</Button>
+                  </div>
                 </li>
               ))}
             </ul>
